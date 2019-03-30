@@ -1,4 +1,6 @@
 import numpy as np
+
+#两层神经网络 - 包含一个隐藏层
 class ShallowNN:
     def __init__(self,n_x,n_h,n_y):
         self.n_x = n_x
