@@ -81,23 +81,12 @@ class ShallowNN:
         return gradients
     
     def update_parameters(self,parameters, gradients, learning_rate = 1.2):
-        W1 = parameters['W1']
-        b1 = parameters['b1']
-        W2 = parameters['W2']
-        b2 = parameters['b2']
-        
-        dW1 = gradients["dW1"]
-        db1 = gradients["db1"]
-        dW2 = gradients["dW2"]
-        db2 = gradients["db2"]
+        parameters['W1'] -= learning_rate * gradients["dW1"]
+        parameters['b1']-= learning_rate * gradients["db1"]
+        parameters['W2'] -= learning_rate * gradients["dW2"]
+        parameters['b2']-= learning_rate * gradients["db2"]
 
-        W1 -= learning_rate * dW1
-        b1 -= learning_rate * db1
-        W2 -= learning_rate * dW2
-        b2 -= learning_rate * db2
-        
-        new_parameters = {"W1": W1,"b1": b1,"W2": W2,"b2": b2}
-        return new_parameters
+        return parameters
 
     def fit(self,X,y,n_iterations = 1e5):
         """  
@@ -108,7 +97,7 @@ class ShallowNN:
         """
         def gradient_descent(X,y,n_iterations,initial_parameters,epsilon = 1e-7):
             cur_iterations = 0
-            parametrs = dict()
+            parameters = dict()
             parameters = {"W1": initial_parameters['W1'],"b1": initial_parameters['b1'],"W2": initial_parameters['W2'],"b2": initial_parameters['b2']}
 
             while cur_iterations < n_iterations:
@@ -146,7 +135,7 @@ class ShallowNN:
     def predict(self,X):
         cache = self.forward_propagation(X,self.parameters)
         y_hat = cache["A2"]
-        predictions = np.array( [1 if x >0.5 else 0 for x in y_hat.reshape(-1,1)] ).reshape(y_hat.shape)
+        predictions = np.array( [1 if x[0] >0.5 else 0 for x in y_hat.reshape(-1,1)] ).reshape(y_hat.shape)
 
         return predictions
 
