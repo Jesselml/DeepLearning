@@ -4,6 +4,7 @@ class DeepNN:
     def __init__(self):
         self.layer_dims = [2,2,1]
         self.L = len(self.layer_dims)-1
+        self.parameters = dict()
 
     def initialize_parameters(self):
         """
@@ -98,12 +99,54 @@ class DeepNN:
         
         return gradients
     
-    def update_parameters(self,parameters,gradients,learning_rate):
+    def update_parameters(self,parameters,gradients,learning_rate=1.2):
         for l in range(1,self.L+1):
             parameters["W" + str(l)] = parameters["W" + str(l)] - learning_rate * gradients["dW" + str(l)]
             parameters["b" + str(l)] = parameters["b" + str(l)] - learning_rate * gradients["db" + str(l)]
             
         return parameters
+
+    def fit(self,X,Y,n_iterations = 1e5):
+        """  
+        Arguments:       
+        X -- dataset of shape (num of features, number of examples)
+        Y -- labels of shape (1, number of examples)
+        num_iterations -- Number of iterations in gradient descent loop 
+        """
+        def gradient_descent(X,Y,n_iterations,initial_parameters,epsilon = 1e-7):
+            cur_iterations = 0
+            parameters = initial_parameters
+
+            while cur_iterations < n_iterations:
+                #1 Forward_propagation to get the essential data for backward_propagation 
+                #caches:dict  {"Z1": Z1,"A1": A1,"Z2": Z2,"A2": A2} 
+                caches = self.forward_propagation(X,parameters)
+
+                #2 Get the cost for current W and b (int:cost)  
+                #last_cost means cost before the descent
+                last_cost = self.compute_cost(caches["A"+str(self.L)],Y)
+
+                #3 Backward_propagation to calculate the gradient for W and b
+                #gradients:dict   {"dW1":dW1,"dW2":dW2,"db1":db1,"db2":db2}
+                gradients = self.backward_propagation(Y,caches,parameters)
+
+                #4 Gradient descent parameter update  Inputs: "parameters, grads". Outputs: "parameters".
+                parameters = self.update_parameters(parameters,gradients)
+
+                #5 Compare the last and current cost
+                current_cost = self.compute_cost(self.forward_propagation(X,parameters)["A2"],Y)
+                if abs(last_cost-current_cost) < epsilon: break
+
+                # Print the cost every 1000 iterations
+                if cur_iterations % 10000 == 0:
+                    print ("Cost after iteration %i: %f" %(cur_iterations, current_cost))
+                cur_iterations +=1
+                
+            return parameters
+
+        initial_parameters = self.initialize_parameters()
+        parameters = gradient_descent(X,Y,n_iterations,initial_parameters)
+        self.parameters = parameters
 
 
 
